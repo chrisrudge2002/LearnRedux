@@ -2,6 +2,8 @@ const redux = require('redux');
 
 console.log('Starting todo redux example');
 
+// Todos reducer and action generators
+// ----------------------------------
 const todosReducer = (state = [], action) => {
 	switch (action.type)
 	{
@@ -27,6 +29,24 @@ const todosReducer = (state = [], action) => {
 	}
 };
 
+const addTodo = (id, text) => {
+	return {
+		type: 'ADD_TODO',
+		id,
+		text,
+		completed: false
+	};
+};
+
+const toggleTodo = (id) => {
+	return {
+		type: 'TOGGLE_TODO',
+		id
+	};
+};
+
+// SearchText reducer and action generators
+// ----------------------------------
 const searchTextReducer = (state = '', action) => {
 	switch (action.type)
 	{
@@ -37,6 +57,15 @@ const searchTextReducer = (state = '', action) => {
 	}
 };
 
+const changeSearchText = (searchText) => {
+	return {
+		type: 'CHANGE_SEARCH_TEXT',
+		searchText
+	};
+};
+
+// ShowCompleted reducer and action generators
+// ----------------------------------
 const showCompletedReducer = (state = false, action) => {
 	switch (action.type)
 	{
@@ -47,6 +76,14 @@ const showCompletedReducer = (state = false, action) => {
 	}
 };
 
+const changeShowCompleted = (showCompleted) => {
+	return {
+		type: 'CHANGE_SHOW_COMPLETED',
+		showCompleted
+	};
+};
+
+// Create combined reducer
 const reducer = redux.combineReducers({
 	searchText: searchTextReducer,
 	showCompleted: showCompletedReducer,
@@ -65,52 +102,22 @@ let unsubscribe = store.subscribe(() => {
 	document.getElementById('app').innerHTML = state.searchText;
 });
 
-// Dispatch an action
-store.dispatch({
-	type: 'CHANGE_SEARCH_TEXT',
-	searchText: 'Test 123'
-});
+// Dispatch actions
+store.dispatch(changeSearchText('Test 123'));
 
-store.dispatch({
-	type: 'CHANGE_SEARCH_TEXT',
-	searchText: 'New'
-});
+store.dispatch(changeSearchText('New search text'));
 
-store.dispatch({
-	type: 'CHANGE_SEARCH_TEXT',
-	searchText: 'Last change'
-});
+store.dispatch(changeSearchText('Last search text'));
 
-store.dispatch({
-	type: 'CHANGE_SHOW_COMPLETED',
-	showCompleted: true
-});
+store.dispatch(changeShowCompleted(true));
 
-store.dispatch({
-	type: 'ADD_TODO',
-	id: 1,
-	text: 'Test Todo 1',
-	completed: false
-});
+store.dispatch(addTodo(1, 'Test Todo 1'));
 
-store.dispatch({
-	type: 'ADD_TODO',
-	id: 2,
-	text: 'Test Todo 2',
-	completed: false
-});
+store.dispatch(addTodo(2, 'Test Todo 2'));
 
-store.dispatch({
-	type: 'ADD_TODO',
-	id: 3,
-	text: 'Test Todo 3',
-	completed: false
-});
+store.dispatch(addTodo(3, 'Test Todo 3'));
 
-store.dispatch({
-	type: 'TOGGLE_TODO',
-	id: 2
-});
+store.dispatch(toggleTodo(2));
 
 // Unsubscribe to changes
 unsubscribe();

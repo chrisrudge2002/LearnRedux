@@ -2,67 +2,58 @@ const redux = require('redux');
 
 console.log('Starting todo redux example');
 
-const stateDefault = {
-	searchText: '',
-	showCompleted: false,
-	todos: []
-};
-const reducer = (state = stateDefault, action) => {
-
+const todosReducer = (state = [], action) => {
 	switch (action.type)
 	{
-		case 'ADD_TODO': return reducerAddTodo(state, action);
-		case 'CHANGE_SEARCH_TEXT': return reducerChangeSearchText(state, action);
-		case 'CHANGE_SHOW_COMPLETED': return reducerChangeShowCompleted(state, action);
-		case 'TOGGLE_TODO': return reducerToggleTodo(state, action);
-		default: return state;
-	}
-};
-
-function reducerAddTodo(state, action) {
-	return {
-		...state,
-		todos: [
-			...state.todos,
-			{
+		case 'ADD_TODO':
+			return [...state, {
 				id: action.id,
 				text: action.text,
 				completed: action.completed
-			}
-		]
-	};
-}
+			}];
+		case 'TOGGLE_TODO':
+			return state.map((todo) => {
+				if (todo.id === action.id) {
+					return {
+						...todo,
+						completed: !todo.completed
+					};
+				} else {
+					return todo;
+				}
+			});
+		default:
+			return state;
+	}
+};
 
-function reducerChangeSearchText(state, action) {
-	return {
-		...state,
-		searchText: action.searchText
-	};
-}
+const searchTextReducer = (state = '', action) => {
+	switch (action.type)
+	{
+		case 'CHANGE_SEARCH_TEXT':
+			return action.searchText;
+		default:
+			return state;
+	}
+};
 
-function reducerChangeShowCompleted(state, action) {
-	return {
-		...state,
-		showCompleted: action.showCompleted
-	};
-}
+const showCompletedReducer = (state = false, action) => {
+	switch (action.type)
+	{
+		case 'CHANGE_SHOW_COMPLETED':
+			return action.showCompleted;
+		default:
+			return state;
+	}
+};
 
-function reducerToggleTodo(state, action) {
-	return {
-		...state,
-		todos: state.todos.map((todo) => {
-			if (todo.id === action.id) {
-				return {
-					...todo,
-					completed: !todo.completed
-				};
-			} else {
-				return todo;
-			}
-		})
-	};
-}
+const reducer = redux.combineReducers({
+	searchText: searchTextReducer,
+	showCompleted: showCompletedReducer,
+	todos: todosReducer
+});
 
+// Create our store
 let store = redux.createStore(reducer, redux.compose(
 	window.devToolsExtension ? window.devToolsExtension() : f => f
 ));
@@ -73,7 +64,6 @@ let unsubscribe = store.subscribe(() => {
 	console.log('currentState', state);
 	document.getElementById('app').innerHTML = state.searchText;
 });
-
 
 // Dispatch an action
 store.dispatch({
@@ -90,8 +80,6 @@ store.dispatch({
 	type: 'CHANGE_SEARCH_TEXT',
 	searchText: 'Last change'
 });
-
-// unsubscribe();
 
 store.dispatch({
 	type: 'CHANGE_SHOW_COMPLETED',
@@ -123,3 +111,6 @@ store.dispatch({
 	type: 'TOGGLE_TODO',
 	id: 2
 });
+
+// Unsubscribe to changes
+unsubscribe();

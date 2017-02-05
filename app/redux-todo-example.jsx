@@ -1,3 +1,4 @@
+const axios = require('axios');
 const redux = require('redux');
 
 console.log('Starting todo redux example');
@@ -83,11 +84,57 @@ const changeShowCompleted = (showCompleted) => {
 	};
 };
 
+// Map reducer and action generators
+// ----------------------------------
+const mapReducer = (state = {isFetching: false, url: undefined}, action) => {
+	switch (action.type)
+	{
+		case 'START_LOCATION_FETCH':
+			return {
+				isFetching: true,
+				url: undefined
+			};
+		case 'COMPLETE_LOCATION_FETCH':
+			return {
+				isFetching: false,
+				url: action.url
+			};
+		default:
+			return state;
+	}
+};
+
+const startLocationFetch = () => {
+	return {
+		type: 'START_LOCATION_FETCH'
+	};
+};
+
+const completeLocationFetch = (url) => {
+	return {
+		type: 'COMPLETE_LOCATION_FETCH',
+		url
+	};
+};
+
+const fetchLocation = () => {
+	store.dispatch(startLocationFetch());
+
+	axios.get('http://ipinfo.io').then(function(res) {
+
+		const loc = res.data.loc;
+		let baseUrl = 'http://maps.google.com?q=';
+
+		store.dispatch(completeLocationFetch(baseUrl + loc));
+	});
+};
+
 // Create combined reducer
 const reducer = redux.combineReducers({
 	searchText: searchTextReducer,
 	showCompleted: showCompletedReducer,
-	todos: todosReducer
+	todos: todosReducer,
+	map: mapReducer
 });
 
 // Create our store
@@ -98,9 +145,17 @@ let store = redux.createStore(reducer, redux.compose(
 // Subscribe to changes
 let unsubscribe = store.subscribe(() => {
 	const state = store.getState();
+
 	console.log('currentState', state);
-	document.getElementById('app').innerHTML = state.searchText;
+
+	if (state.map.isFetching) {
+		document.getElementById('app').innerHTML = 'Loading';
+	} else if (state.map.url) {
+		document.getElementById('app').innerHTML = '<a href="' + state.map.url + '" target="_blank">View Your Location</a>';
+	}
 });
+
+fetchLocation();
 
 // Dispatch actions
 store.dispatch(changeSearchText('Test 123'));
@@ -120,4 +175,4 @@ store.dispatch(addTodo(3, 'Test Todo 3'));
 store.dispatch(toggleTodo(2));
 
 // Unsubscribe to changes
-unsubscribe();
+//unsubscribe();
